@@ -16,7 +16,6 @@ import (
 	"github.com/src-d/go-mysql-server/server"
 	"github.com/src-d/go-mysql-server/sql"
 	"github.com/src-d/go-mysql-server/sql/analyzer"
-	"github.com/src-d/go-mysql-server/sql/index/pilosa"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,8 +44,6 @@ func authEngine(au auth.Auth) (string, *sqle.Engine, error) {
 	if err != nil {
 		return "", nil, err
 	}
-
-	catalog.RegisterIndexDriver(pilosa.NewDriver(tmpDir))
 
 	a := analyzer.NewBuilder(catalog).Build()
 	config := &sqle.Config{Auth: au}
@@ -132,8 +129,6 @@ func testAuthentication(
 
 var queries = map[string]string{
 	"select":       "select * from test",
-	"create_index": "create index t on test using pilosa (name) with (async = false)",
-	"drop_index":   "drop index t on test",
 	"insert":       "insert into test (id, name) values ('id', 'name')",
 	"lock":         "lock tables test read",
 	"unlock":       "unlock tables",

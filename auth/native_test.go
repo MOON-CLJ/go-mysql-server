@@ -118,14 +118,6 @@ func TestNativeAuthorizationSingleAll(t *testing.T) {
 		{"root", queries["select"], false},
 		{"", queries["select"], false},
 
-		{"user", queries["create_index"], true},
-		{"root", queries["create_index"], false},
-		{"", queries["create_index"], false},
-
-		{"user", queries["drop_index"], true},
-		{"root", queries["drop_index"], false},
-		{"", queries["drop_index"], false},
-
 		{"user", queries["insert"], true},
 		{"root", queries["insert"], false},
 		{"", queries["insert"], false},
@@ -149,14 +141,6 @@ func TestNativeAuthorizationSingleRead(t *testing.T) {
 		{"user", queries["select"], true},
 		{"root", queries["select"], false},
 		{"", queries["select"], false},
-
-		{"user", queries["create_index"], false},
-		{"root", queries["create_index"], false},
-		{"", queries["create_index"], false},
-
-		{"user", queries["drop_index"], false},
-		{"root", queries["drop_index"], false},
-		{"", queries["drop_index"], false},
 
 		{"user", queries["insert"], false},
 		{"root", queries["insert"], false},
@@ -190,18 +174,6 @@ func TestNativeAuthorization(t *testing.T) {
 		{"no_password", queries["select"], true},
 		{"no_permissions", queries["select"], true},
 		{"root", queries["select"], true},
-
-		{"", queries["create_index"], false},
-		{"user", queries["create_index"], false},
-		{"no_password", queries["create_index"], false},
-		{"no_permissions", queries["create_index"], false},
-		{"root", queries["create_index"], true},
-
-		{"", queries["drop_index"], false},
-		{"user", queries["drop_index"], false},
-		{"no_password", queries["drop_index"], false},
-		{"no_permissions", queries["drop_index"], false},
-		{"root", queries["drop_index"], true},
 
 		{"", queries["insert"], false},
 		{"user", queries["insert"], false},

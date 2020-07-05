@@ -104,8 +104,6 @@ func TestAuditAuthorization(t *testing.T) {
 		{"user", "invalid query", false},
 		{"user", queries["select"], true},
 
-		{"user", queries["create_index"], false},
-		{"user", queries["drop_index"], false},
 		{"user", queries["insert"], false},
 		{"user", queries["lock"], false},
 		{"user", queries["unlock"], false},

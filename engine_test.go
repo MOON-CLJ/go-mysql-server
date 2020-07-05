@@ -3144,14 +3144,6 @@ func TestReadOnly(t *testing.T) {
 	_, _, err := e.Query(newCtx(), `SELECT i FROM mytable`)
 	require.NoError(err)
 
-	_, _, err = e.Query(newCtx(), `CREATE INDEX foo ON mytable USING pilosa (i, s)`)
-	require.Error(err)
-	require.True(auth.ErrNotAuthorized.Is(err))
-
-	_, _, err = e.Query(newCtx(), `DROP INDEX foo ON mytable`)
-	require.Error(err)
-	require.True(auth.ErrNotAuthorized.Is(err))
-
 	_, _, err = e.Query(newCtx(), `INSERT INTO mytable (i, s) VALUES(42, 'yolo')`)
 	require.Error(err)
 	require.True(auth.ErrNotAuthorized.Is(err))
