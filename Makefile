@@ -3,25 +3,69 @@ PROJECT = go-mysql-server
 COMMANDS =
 UNAME_S := $(shell uname -s)
 
-# Including ci Makefile
-CI_REPOSITORY ?= https://github.com/src-d/ci.git
-CI_BRANCH ?= v1
-CI_PATH ?= .ci
-MAKEFILE := $(CI_PATH)/Makefile.main
-$(MAKEFILE):
-	git clone --quiet --depth 1 -b $(CI_BRANCH) $(CI_REPOSITORY) $(CI_PATH);
--include $(MAKEFILE)
+MAIN_FILE := "cmd/server/main.go"
+PKG_LIST := $(shell go list ./... | grep -v /vendor/)
+GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
+# https://github.com/golangci/awesome-go-linters
+LINTERS := \
+	github.com/rakyll/gotest \
+	golang.org/x/lint/golint \
+	honnef.co/go/tools/cmd/staticcheck
+
+.PHONY: all init dep build clean test coverage coverhtml lint golint vet staticcheck integration
+
+all: build
+
+init: dep testdep ## Download dependencies and add git hooks
+	find .git/hooks -type l -exec rm {} \;
+	find githooks -type f -exec ln -sf ../../{} .git/hooks/ \;
+
+lint: testdep ## Lint files
+	@golint -set_exit_status ${PKG_LIST}
+
+vet: testdep ## Checks correctness
+	@go vet ${PKG_LIST}
+
+staticcheck: testdep ## Analyses code
+	staticcheck ${PKG_LIST}
+
+test: ## Run unit tests
+	@go test -short ${PKG_LIST}
+
+bench: ## Run benchmark tests
+	@go test -short -bench ${PKG_LIST}
+
+test-coverage: ## Run tests with coverage
+	@go test -short -coverprofile cover.out -covermode=atomic ${PKG_LIST}
+	@cat cover.out >> coverage.txt
+
+test-int: ## Run unit and integration tests
+	@go test -short -tags=integration ${PKG_LIST}
 
 integration:
-	./_integration/run ${TEST}
+	./_integration/run go
 
-oniguruma:
-ifeq ($(UNAME_S),Linux)
-	$(shell apt-get install libonig-dev)
-endif
+coverage: ## Generate global code coverage report
+	./scripts/coverage.sh;
 
-ifeq ($(UNAME_S),Darwin)
-	$(shell brew install oniguruma)
-endif
+coverhtml: ## Generate global code coverage report in HTML
+	./scripts/coverage.sh html;
 
-.PHONY: integration
+dep: ## Get dependencies
+	@go mod tidy
+	@go mod vendor
+
+testdep: ## Get dev dependencies
+	@go get -v $(LINTERS)
+
+run:
+	./bin/$(PROJECT)
+
+build: dep ## Build the binary file
+	@go build -i -o ./bin/$(PROJECT) ./$(MAIN_FILE)
+
+clean: ## Remove previous build
+	@rm -f ./bin
+
+help: ## Display this help screen
+	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
